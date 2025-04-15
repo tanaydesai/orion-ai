@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
-apiKey:process.env.OPENAI
+apiKey:process.env.OPENAI_API_KEY
 });
 
 // Define the request schema
