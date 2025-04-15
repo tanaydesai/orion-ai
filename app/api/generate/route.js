@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
-  apiKey: "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",
+apiKey:process.env.OPENAI
 });
 
 // Define the request schema
