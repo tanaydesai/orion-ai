@@ -1,14 +1,20 @@
 import OpenAI from 'openai';
+import { z } from 'zod';
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "",
+  apiKey: "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",
+});
+
+// Define the request schema
+const requestSchema = z.object({
+  prompt: z.string().min(1)
 });
 
 const generatePhysicsSimulation = async (prompt) => {
   try {
     const response = await openai.chat.completions.create({
-      model: 'o3-mini', 
+      model: 'o3-mini',
       messages: [
         {
           role: 'system',
@@ -125,18 +131,15 @@ const generatePhysicsSimulation = async (prompt) => {
           content: prompt
         }
       ],
-      // temperature: 0.7,
-      // max_completion_tokens: 2500,
       response_format: { type: "json_object" }
     });
 
     // Get the response content
-    let jsonResponse = response.choices[0].message.content;
+    const jsonResponse = response.choices[0].message.content;
     
     // Parse and validate the JSON
     try {
       const parsedJson = JSON.parse(jsonResponse);
-      // console.log("Generated simulation description:", parsedJson);
       return jsonResponse;
     } catch (jsonError) {
       console.error("Error parsing JSON response:", jsonError);
@@ -150,15 +153,18 @@ const generatePhysicsSimulation = async (prompt) => {
 
 export async function POST(request) {
   try {
-    const { prompt } = await request.json();
+    const body = await request.json();
     
-    if (!prompt) {
+    // Validate the request
+    const result = requestSchema.safeParse(body);
+    if (!result.success) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
     }
-
+    
+    const { prompt } = result.data;
     const simulationJson = await generatePhysicsSimulation(prompt);
     
     return new Response(JSON.stringify({ simulationJson }), {
